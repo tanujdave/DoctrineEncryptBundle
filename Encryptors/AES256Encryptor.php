@@ -10,49 +10,43 @@ namespace VMelnik\DoctrineEncryptBundle\Encryptors;
 class AES256Encryptor implements EncryptorInterface {
 
     /**
+     * Secret key for aes algorythm
      * @var string
      */
     private $secretKey;
 
     /**
-     * @var string
-     */
-    private $initializationVector;
-
-    /**
-     * {@inheritdoc}
+     * Initialization of encryptor
+     * @param string $key 
      */
     public function __construct($key) {
-        $this->secretKey = md5($key);
-        $this->initializationVector = mcrypt_create_iv(
-            mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB),
-            MCRYPT_RAND
-        );
+        $this->secretKey = $key;
     }
 
     /**
-     * {@inheritdoc}
+     * Implementation of EncryptorInterface encrypt method
+     * @param string $data
+     * @return string
      */
     public function encrypt($data) {
         return trim(base64_encode(mcrypt_encrypt(
-            MCRYPT_RIJNDAEL_256,
-            $this->secretKey,
-            $data,
-            MCRYPT_MODE_ECB,
-            $this->initializationVector
-        )));
+                                        MCRYPT_RIJNDAEL_256, $this->secretKey, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND
+                                        ))));
     }
 
     /**
-     * {@inheritdoc}
+     * Implementation of EncryptorInterface decrypt method
+     * @param string $data
+     * @return string 
      */
-    public function decrypt($data) {
+    function decrypt($data) {
+        $data = is_resource($data) ? stream_get_contents($data) : $data;
         return trim(mcrypt_decrypt(
-            MCRYPT_RIJNDAEL_256,
-            $this->secretKey,
-            base64_decode($data),
-            MCRYPT_MODE_ECB,
-            $this->initializationVector
-        ));
+                                MCRYPT_RIJNDAEL_256, $this->secretKey, base64_decode($data), MCRYPT_MODE_ECB, mcrypt_create_iv(
+                                        mcrypt_get_iv_size(
+                                                MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB
+                                        ), MCRYPT_RAND
+                                )));
     }
+
 }
